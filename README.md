@@ -1,3 +1,3 @@
 # Artificial Intelligence
 # 1. Map coloring constraint satisfaction problem
-![Alt text](//img.jpg?raw=true "Optional Title")
+![USA map using Forward checking with mininum remaining value heuristic](/Map_Coloring_CSP/US_FC_MRV.png?raw=true "Optional Title")
