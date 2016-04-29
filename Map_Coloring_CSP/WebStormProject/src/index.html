@@ -1,0 +1,208 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>Map coloring</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="apple-touch-icon" href="apple-touch-icon.png">
+        <!-- Place favicon.ico in the root directory -->
+
+        <link rel="stylesheet" href="css/normalize.css">
+        <link rel="stylesheet" href="css/main.css">
+        <script src="js/vendor/modernizr-2.8.3.min.js"></script>
+        <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+        <script src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
+        <script src="http://d3js.org/topojson.v1.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+        <style>
+            path {
+                stroke: white;
+                stroke-width: 0.5px;
+                fill: black;
+            }
+
+            .country {
+                fill: #ccc;
+                stroke: #fff;
+                stroke-width: .5px;
+                stroke-linejoin: round;
+            }
+
+            .graticule {
+                fill: none;
+                stroke: #000;
+                stroke-opacity: .3;
+                stroke-width: .5px;
+            }
+
+            .graticule.outline {
+                stroke: #333;
+                stroke-opacity: 1;
+                stroke-width: 1.5px;
+            }
+
+        </style>
+
+        <script>
+            $(document).ready(function(){
+                displayMap();
+
+                $("#executeBtn").click(function(){
+                    loadData();
+
+                });
+            });
+        </script>
+
+    </head>
+    <body>
+        <!--[if lt IE 8]>
+            <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+
+        <!-- Add your site or application content here -->
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/{{JQUERY_VERSION}}/jquery.min.js"></script>
+
+        <script>window.jQuery || document.write('<script src="js/vendor/jquery-{{JQUERY_VERSION}}.min.js"><\/script>')</script>
+        <script src="js/plugins.js"></script>
+        <script src="js/main.js"></script>
+        <script src="js/MRVWithForwardChecking.js"></script>
+        <script src="js/MinConflict.js"></script>
+
+
+        <div>
+            <p style=margin-bottom:0px>Select an algorithm to run: </p>
+            <select id = "algorithm">
+                <option value = "1">FC with MRV</option>
+                <option value = "2">Min-conflict</option>
+            </select>
+            <button id = "executeBtn">Execute</button>
+        </div>
+        <div>
+            <p style=margin-bottom:-20px;>Performance: </p>
+            <p id="numRegions" style=margin-bottom:-20px;></p>
+            <p id="kpi1" style=margin-bottom:-20px></p>
+            <p id="kpi2" style=margin-bottom:-20px></p>
+        </div>
+
+        <script>
+            var svg, path,projection;
+            var countries, neighbours;
+            var coloredMap = [];
+
+            function loadData(){
+                d3.json("world-50m.json", function(error, world) {
+                    countries = topojson.feature(world, world.objects.countries).features,
+                        neighbours = topojson.neighbors(world.objects.countries.geometries);
+
+                    var option = $("#algorithm").val();
+                    runAlgorithm(option);
+
+                });
+
+//                d3.json("us-10m.json", function(error, usa) {
+//                    countries = topojson.feature(usa, usa.objects.states).features,
+//                        neighbours = topojson.neighbors(usa.objects.states.geometries);
+//                    var option = $("#algorithm").val();
+//                    runAlgorithm(option);
+//                });
+
+//                d3.json("australia.json", function(error, aus) {
+//                     countries = topojson.feature(aus, aus.objects.states).features,
+//                        neighbours = topojson.neighbors(aus.objects.states.geometries);
+//                    var option = $("#algorithm").val();
+//                    runAlgorithm(option);
+//                });
+//
+//                d3.json("eu.topo.json", function(error, europe) {
+//                    countries = topojson.feature(europe, europe.objects.europe).features,
+//                        neighbours = topojson.neighbors(europe.objects.europe.geometries);
+//                    var option = $("#algorithm").val();
+//                    runAlgorithm(option);
+//                });
+//
+//                d3.json("africa.topo.json", function(error, africa) {
+//                    countries = topojson.feature(africa, africa.objects.collection).features,
+//                        neighbours = topojson.neighbors(africa.objects.collection.geometries);
+//                    var option = $("#algorithm").val();
+//                    runAlgorithm(option);
+//                });
+
+            }
+            function displayMap() {
+                var width = 960,
+                    height = 500;
+
+                projection = d3.geo.albersUsa(),
+                projection = d3.geo.naturalEarth(),
+                    color = d3.scale.category20(),
+                    graticule = d3.geo.graticule();
+
+                path = d3.geo.path()
+                    .projection(projection);
+
+                svg = d3.select("body").append("svg")
+                    .attr("width", width)
+                    .attr("height", height);
+
+                svg.append("path")
+                    .datum(graticule)
+                    .attr("class", "graticule")
+                    .attr("d", path);
+
+                svg.append("path")
+                    .datum(graticule.outline)
+                    .attr("class", "graticule outline")
+                    .attr("d", path);
+            }
+
+
+            function tempColor(d, i) {
+                return coloredMap[i].color;
+            }
+
+            function runAlgorithm(selAlgo){
+                    coloredMap = [];
+                    if(selAlgo == 1){
+                        coloredMap = colorMapWithFCMRV(this.countries, this.neighbours);
+                    }
+                    else{
+                        coloredMap = colorMapWithMinConflicts(this.countries, this.neighbours);
+                    }
+
+                    var countries = svg.selectAll(".country")
+                        .data(this.countries)
+                        .enter().insert("path", ".graticule")
+                        .attr("class", "country")
+                        .attr("d", path);
+
+                        countries.style("fill", function (d, i) {
+                            return tempColor(d, i);
+                        });
+                        updatePerformanceParameters(selAlgo);
+            }
+
+            function updatePerformanceParameters(selAlgo){
+                document.getElementById("numRegions").innerHTML ="Number of regions: " + countries.length;
+                if(selAlgo == 1) {
+                    document.getElementById("kpi1").innerHTML = "Number of dead end encoutered: " + numOfDeadEnds;
+                    document.getElementById("kpi2").innerHTML = "Total number of recursive calls made: " + numOfRecursiveCalls;
+                    numOfDeadEnds = 0; numOfRecursiveCalls = 0;
+                }
+                else{
+                    document.getElementById("kpi1").innerHTML = "Total number of random restarts: " + numOfRestarts;
+                    document.getElementById("kpi2").innerHTML = "Total number of steps: " + numOfTotalSteps;
+                    numOfRestarts = 0; numOfTotalSteps = 0;
+                }
+
+            }
+
+        </script>
+
+    </body>
+</html>
