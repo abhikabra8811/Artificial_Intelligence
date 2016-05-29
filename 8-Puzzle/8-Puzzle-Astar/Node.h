@@ -5,37 +5,40 @@
 #include <array>
 #include <memory>
 
-using namespace std;
+using std::array;
+using std::shared_ptr;
 
 class Node
 {
 public:
-	Node()=default;
-	~Node()=default;
-	
+	Node() = default;
 	//Constructor for node
-	Node(shared_ptr<Node> parent, array<array < int, 3 >, 3> state);
+	Node(shared_ptr<Node> parent, const array<array < int, 3 >, 3>& state);
+
+	~Node() = default;
 
 	//Returns an array representing the state of the node
-	array<array<int, 3>, 3> getState(){ return m_state;};
+	array<array<int, 3>, 3> getState() const { return m_state;};
 	
 	// returns g(n)
-	int getPathCostSoFar(){ return m_gCost; };
+	int getPathCostSoFar() const { return m_gCost; };
 	
 	//sets the path cost
-	void setPathCostSoFar(const int gCost);
+	inline void setPathCostSoFar(const int gCost);
 	
 	// returns h(n)
-	int getHeuristicCost(){ return m_hCost; };
+	int getHeuristicCost() const { return m_hCost; };
 	
 	// sets h(n)
-	void setHeuristicCost(const int hCost);
+	inline void setHeuristicCost(const int hCost);
 	
 	// return f(n)
-	inline int getEstimatedPathCost(){ return m_fCost; };
+	int getEstimatedPathCost() const { return m_fCost; };
 
 	// sets f(n)
-	void setEstimatedPathCost();
+	inline void setEstimatedPathCost();
+
+	void updatePathCost(const int gcost, const int hcost);
 
 public:
 	shared_ptr<Node> m_parent = nullptr;

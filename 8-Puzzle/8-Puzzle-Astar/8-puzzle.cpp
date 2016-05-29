@@ -1,7 +1,7 @@
 #include "8-puzzle.h"
 
 //Constructor
-Puzzle::Puzzle(array< array <int, 3>, 3 > startState, array< array <int, 3>, 3> goalState)
+Puzzle::Puzzle(const array< array <int, 3>, 3 >& startState,const array< array <int, 3>, 3>& goalState)
 												:m_startState(makeNode(nullptr,startState)),
 												m_goalState(goalState){
 	//Populating lookup table for goal state
@@ -10,7 +10,7 @@ Puzzle::Puzzle(array< array <int, 3>, 3 > startState, array< array <int, 3>, 3> 
 
 //Create and returns a smart pointer for node
 shared_ptr<Node> Puzzle::makeNode(const shared_ptr<Node>& parent, const array<array < int, 3 >, 3>& state){
-	numberOfNodesCreated++;
+	++numberOfNodesCreated;
 	return make_shared<Node>(parent, state);
 }
 
@@ -41,9 +41,7 @@ shared_ptr<Node> Puzzle::solve(){
 			
 			int gCost = successor->m_parent->getPathCostSoFar() + 1;
 			int hCost = calculateManhattenDistanceFromGoal(successor->getState(), m_goalState);
-			successor->setPathCostSoFar(gCost);
-			successor->setHeuristicCost(hCost);
-			successor->setEstimatedPathCost();
+			successor->updatePathCost(gCost, hCost);
 			m_NodesQueue.push(successor);
 		}
 	}
@@ -103,12 +101,10 @@ vector<shared_ptr<Node>> Puzzle::createSuccessorNode(shared_ptr<Node> node){
 }
 
 //Calculate heuristic cost for node
-int Puzzle::calculateManhattenDistanceFromGoal(array<array < int, 3 >, 3> currentState, array<array < int, 3 >, 3> goalState){
+int Puzzle::calculateManhattenDistanceFromGoal(const array<array < int, 3 >, 3>& currentState, const array<array < int, 3 >, 3>& goalState){
 	int totalDist = 0;
-	for (int i = 0; i < 3; i++)
-	{
-		for (int j = 0; j < 3; j++)
-		{
+	for (int i = 0; i < 3; i++){
+		for (int j = 0; j < 3; j++)		{
 			int iGoal = 0; int jGoal = 0;
 			if (currentState[i][j] > 0){
 				iGoal = m_positionArray[currentState[i][j]][0];
@@ -117,18 +113,14 @@ int Puzzle::calculateManhattenDistanceFromGoal(array<array < int, 3 >, 3> curren
 			}
 		}
 	}
-
 	return totalDist;
 }
 
 void Puzzle::positionInState(int iElement, array<array < int, 3 >, 3> goalState, int&iGoal, int&jGoal){
 	iGoal = 0; jGoal = 0;
-	for (int i = 0; i < 3; i++)
-	{
-		for (int j = 0; j < 3; j++)
-		{
-			if (goalState[i][j] == iElement)
-			{
+	for (int i = 0; i < 3; i++)	{
+		for (int j = 0; j < 3; j++)		{
+			if (goalState[i][j] == iElement){
 				iGoal = i; jGoal = j;
 				return;
 			}
@@ -138,10 +130,8 @@ void Puzzle::positionInState(int iElement, array<array < int, 3 >, 3> goalState,
 
 //Creating a lookup table for goal state positions
 void Puzzle::positionsInGoalState(){
-	for (int i = 0; i < 3; i++)
-	{
-		for (int j = 0; j < 3; j++)
-		{
+	for (int i = 0; i < 3; i++){
+		for (int j = 0; j < 3; j++){
 			m_positionArray[m_goalState[i][j]][0] = i;
 			m_positionArray[m_goalState[i][j]][1] = j;
 		}

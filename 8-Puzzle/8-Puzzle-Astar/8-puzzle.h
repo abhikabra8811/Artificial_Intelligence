@@ -10,10 +10,8 @@
 using namespace std;
 
 //Comparator class for priority queue
-struct CompareNode
-{
-	bool operator()(const shared_ptr<Node> & lhs, const shared_ptr<Node> & rhs)
-	{
+struct CompareNode{
+	bool operator()(const shared_ptr<Node> & lhs, const shared_ptr<Node> & rhs){
 		if (lhs->getEstimatedPathCost() == rhs->getEstimatedPathCost()){
 			return lhs->getHeuristicCost() > rhs->getHeuristicCost();
 		}
@@ -26,9 +24,9 @@ class Puzzle
 public:
 
 	//Contructor with start and goal state
-	Puzzle(array<array <int, 3>, 3 > startState, array<array <int, 3>, 3> goalState);
+	Puzzle(const array<array <int, 3>, 3 >& startState, const array<array <int, 3>, 3>& goalState);
 	Puzzle() = delete;
-	~Puzzle()=default;
+	~Puzzle()= default;
 
 	//Method called to solve puzzle
 	shared_ptr<Node> solve();
@@ -45,7 +43,7 @@ private:
 	vector<shared_ptr<Node>> createSuccessorNode(shared_ptr<Node> node);
 	
 	//calculates manhatten dist hueristic for input state
-	int calculateManhattenDistanceFromGoal(array<array < int, 3 >, 3> currentState, array<array < int, 3 >, 3> goalState);
+	int calculateManhattenDistanceFromGoal(const array<array < int, 3 >, 3>& currentState, const array<array < int, 3 >, 3>& goalState);
 	
 	//determines row and col position of input element
 	void positionInState(int iElement, array<array < int, 3 >, 3> goalState, int&iGoal, int&jGoal);
