@@ -1,5 +1,4 @@
 # Artificial Intelligence
-## Assignment 1: 8-Puzzle using A* algorithm
 
 ## Project: Map coloring constraint satisfaction problem
 1. **Map coloring using Forward checking with mininum remaining value heuristic**
